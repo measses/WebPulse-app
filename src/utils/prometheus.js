@@ -31,28 +31,28 @@ const httpRequestDuration = new promClient.Histogram({
 const pingDuration = new promClient.Gauge({
   name: 'http_ping_duration_ms',
   help: 'HTTP ping request duration in milliseconds',
-  labelNames: ['url'],
+  labelNames: ['url', 'site_name'],
   registers: [register]
 });
 
 const pingStatus = new promClient.Gauge({
   name: 'http_request_status',
   help: 'HTTP ping request status code',
-  labelNames: ['url'],
+  labelNames: ['url', 'site_name'],
   registers: [register]
 });
 
 const pingAvailability = new promClient.Gauge({
   name: 'http_request_availability_percent',
   help: 'HTTP ping request availability percentage',
-  labelNames: ['url'],
+  labelNames: ['url', 'site_name'],
   registers: [register]
 });
 
 const pingErrorsTotal = new promClient.Counter({
   name: 'http_request_errors_total',
   help: 'Total number of HTTP ping request errors',
-  labelNames: ['url', 'error_type'],
+  labelNames: ['url', 'site_name', 'error_type'],
   registers: [register]
 });
 
@@ -90,20 +90,20 @@ const responseTimeMiddleware = (req, res, next) => {
 };
 
 // Ping metrikleri güncelleme fonksiyonu
-const updatePingMetrics = (url, duration, statusCode, isError = false, errorType = null) => {
+const updatePingMetrics = (url, siteName, duration, statusCode, isError = false, errorType = null) => {
   try {
-    pingDuration.set({ url }, duration);
-    pingStatus.set({ url }, statusCode);
+    pingDuration.set({ url, site_name: siteName }, duration);
+    pingStatus.set({ url, site_name: siteName }, statusCode);
     
     // Erişilebilirlik yüzdesi güncelleme
     if (isError) {
-      pingAvailability.set({ url }, 0);
-      pingErrorsTotal.inc({ url, error_type: errorType || 'unknown' });
+      pingAvailability.set({ url, site_name: siteName }, 0);
+      pingErrorsTotal.inc({ url, site_name: siteName, error_type: errorType || 'unknown' });
     } else {
-      pingAvailability.set({ url }, 100);
+      pingAvailability.set({ url, site_name: siteName }, 100);
     }
   } catch (error) {
-    logger.error(`Error updating metrics for ${url}:`, error);
+    logger.error(`Error updating metrics for ${siteName} (${url}):`, error);
   }
 };
 

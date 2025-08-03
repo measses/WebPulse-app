@@ -39,7 +39,8 @@ const pingWebsite = async (site) => {
     // Prometheus metriklerini güncelle
     const isError = statusCode >= 400;
     prometheus.updatePingMetrics(
-      site.url, 
+      site.url,
+      site.name,
       responseTime, 
       statusCode, 
       isError,
@@ -62,7 +63,8 @@ const pingWebsite = async (site) => {
     
     // Prometheus metriklerini güncelle
     prometheus.updatePingMetrics(
-      site.url, 
+      site.url,
+      site.name,
       responseTime, 
       0, 
       true,
